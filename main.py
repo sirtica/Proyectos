@@ -1,14 +1,12 @@
 import os
 from flask import Flask, request, jsonify
-import google.generativeai as genai
+from google import genai
 
 app = Flask(__name__)
 
-genai.configure(
+client = genai.Client(
     api_key=os.environ.get("GEMINI_API_KEY")
 )
-
-model = genai.GenerativeModel("gemini-pro")
 
 
 @app.route("/")
@@ -23,12 +21,15 @@ def chat():
 
     if not data:
         return jsonify({
-            "error": "No JSON received"
+            "error": "No JSON"
         }), 400
 
     user_message = data.get("message", "")
 
-    response = model.generate_content(user_message)
+    response = client.models.generate_content(
+        model="gemini-2.0-flash",
+        contents=user_message
+    )
 
     return jsonify({
         "reply": response.text
