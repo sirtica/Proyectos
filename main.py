@@ -4,13 +4,10 @@ import google.generativeai as genai
 
 app = Flask(__name__)
 
-# API KEY de Gemini desde variables de entorno
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+genai.configure(
+    api_key=os.environ.get("GEMINI_API_KEY")
+)
 
-# Configurar Gemini
-genai.configure(api_key=GEMINI_API_KEY)
-
-# Modelo
 model = genai.GenerativeModel("gemini-1.5-flash")
 
 
@@ -24,27 +21,25 @@ def chat():
 
     data = request.get_json()
 
-    if not data or "message" not in data:
+    if not data:
         return jsonify({
-            "error": "Falta el campo 'message'"
+            "error": "No JSON received"
         }), 400
 
-    user_message = data["message"]
+    user_message = data.get("message", "")
 
-    try:
+    response = model.generate_content(user_message)
 
-        response = model.generate_content(user_message)
-
-        return jsonify({
-            "reply": response.text
-        })
-
-    except Exception as e:
-
-        return jsonify({
-            "error": str(e)
-        }), 500
+    return jsonify({
+        "reply": response.text
+    })
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+
+    port = int(os.environ.get("PORT", 8080))
+
+    app.run(
+        host="0.0.0.0",
+        port=port
+    )
