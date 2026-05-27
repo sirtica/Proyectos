@@ -17,31 +17,31 @@ def home():
 @app.route("/chat", methods=["POST"])
 def chat():
 
-    data = request.get_json()
-
-    if not data:
-        return jsonify({
-            "error": "No JSON"
-        }), 400
-
-    user_message = data.get("message", "")
-
     try:
 
-    response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=user_message
-    )
+        data = request.get_json()
 
-    return jsonify({
-        "reply": response.text
-    })
+        if not data:
+            return jsonify({
+                "error": "No JSON received"
+            }), 400
 
-except Exception as e:
+        user_message = data.get("message", "")
 
-    return jsonify({
-        "error": str(e)
-    }), 500
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=user_message
+        )
+
+        return jsonify({
+            "reply": response.text
+        })
+
+    except Exception as e:
+
+        return jsonify({
+            "error": str(e)
+        }), 500
 
 
 if __name__ == "__main__":
